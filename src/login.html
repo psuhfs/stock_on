@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!--===== CSS =====-->
-        <link rel="stylesheet" href="login.css">
+        <link rel="stylesheet" href="../css/login.css">
 
         <title>StockOn Sign In</title>
     </head>
@@ -24,9 +24,40 @@
                     <label for="" class="form__label">Password</label>
                 </div>
 
-                <a href="signup.html" class="form__link">Sign Up</a>
+                <a href="./signup.html" class="form__link">Sign Up</a>
                 <input type="submit" class="form__button" value="Sign In">
             </form>
         </div>
     </body>
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        document.querySelector('.form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.querySelector('input[type="text"]').value;
+            const password = document.querySelector('input[type="password"]').value;
+
+            const data = {
+                username: username,
+                password: password
+            };
+            let body = JSON.stringify(data);
+            console.log(body);
+
+            fetch(`${BASE_URL}/auth/signin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: body,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>>
 </html>
