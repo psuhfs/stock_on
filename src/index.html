@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockOn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+</head>
+
+<body>
+    <div class="container my-5">
+        <div class="title-menu">
+            <button id="main-options" class="menu-button">☰</button>
+            <div id="menu" class="menu">
+                <button class="cache-button">Clear Website Cache</button>
+            </div>
+
+            <h1 class="text-center">StockOn</h1>
+        </div>
+        
+
+
+        <!-- Access Code Input -->
+        <div class="mb-3">
+            <!-- <label for="accessCode" class="form-label">Access Code:</label> -->
+            <input type="text" id="accessCode" class="form-control" placeholder="Access Code" required>
+        </div>
+
+
+        <!-- Filter Options (Initially Hidden) -->
+        <div id="filterOptions" style="display: none;">
+            <div class = "selection-container">
+                <div class="mb-3">
+                    <label for="locationSelect" class="form-label" style="font-size: 0.7em;">Location</label>
+                    <select id="locationSelect" class="form-select" required></select>
+                    <small id="locationNote" class="form-text text-muted"></small>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="AreaSelect" class="form-label" style="font-size: 0.7em;">Area</label>
+                    <select id="AreaSelect" class="form-select" required></select>
+                </div>
+    
+                <div class="mb-3">
+                    <label for="categorySelect" class="form-label" style="font-size: 0.7em;">Category</label>
+                    <select id="categorySelect" class="form-select" required></select>
+                </div>
+            </div>
+
+
+            <div class="item-search-container">
+                <div class="d-flex align-items-center mb-3">
+                    <button id="addItem" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
+
+                    <!-- Modal for adding new item -->
+                    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="addItemForm" onsubmit="return false;">
+                                        <div class="mb-3">
+                                            <label for="itemId" class="form-label">Item ID</label>
+                                            <input type="text" class="form-control" id="itemId" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="itemName" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="itemName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="unitSize" class="form-label">Unit Size</label>
+                                            <input type="text" class="form-control" id="unitSize" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="addItemButton">Add Item</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by Item ID or Name">
+                </div>
+            
+                <!-- Items Table -->
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Name</th>
+                            <th>Unit Size</th>
+                            <th>Order Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemTableBody">
+                        <!-- Dynamic items will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="sendOrderInformation">
+                <!-- Button to Trigger Download and Send Order Date in Email-->
+                <label for="orderDate">Order Date:</label>
+                <input type="date" id="orderDate" name="orderDate" required>
+                <button id="sendData" class="btn btn-primary me-2" disabled>Send Data</button>
+                <!-- <button id="printDate" class="btn btn-primary me-2">Print Date</button> -->
+            </div>
+        </div>
+        
+        <!-- Success Message Modal -->
+        <div class="modal fade" id="successMessage" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="successMessageLabel">Success</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        File successfully sent!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Details Popup (Initially Hidden) -->
+        <div id="itemDetailsPopup" class="item-details-popup" style="display: none;">
+            <div class="item-details-content">
+                <span id="closePopup" class="close-popup">&times;</span>
+                <h4>Item Details</h4>
+                <div id="itemDetails"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<!-- <script src="data.js"></script> -->
+<script src="script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</html>
