@@ -4,18 +4,25 @@ document.addEventListener("DOMContentLoaded", async function() {
     const itemsContainer = document.getElementById("items-container")
 
     let categoriesData = null
+    let data = null;
 
-    const resp = await apiCallGet(`${BASE_URL}/stockon/getItems`)
-    if (!resp.ok) {
-        if (resp.status === 401) {
-            alert("Unauthorized, redirecting to login page.")
-        } else {
-            alert("Something went wrong, redirecting to login page.")
+    try {
+        const resp = await apiCallGet(`${BASE_URL}/stockon/getItems`)
+        if (!resp.ok) {
+            if (resp.status === 401) {
+                alert("Unauthorized, redirecting to login page.")
+            } else {
+                alert("Something went wrong, redirecting to login page.")
+            }
+            navigate("/login")
         }
-        navigate("/login")
-    }
 
-    const data = await resp.json()
+        data = await resp.json()
+    }catch (_) {
+        alert("There was some issue while fetching data, this might be outdated version of inventory.")
+        let resp = await fetch("/static/categories_schema.json")
+        data = await resp.json();
+    }
     categoriesData = data
 
     // Global array to track item quantities
@@ -38,8 +45,60 @@ document.addEventListener("DOMContentLoaded", async function() {
     submitButton.style.cursor = "pointer"
     submitButton.style.display = "none" // Initially hidden
 
-    submitButton.addEventListener("click", () => {
-        alert("submitted")
+    submitButton.addEventListener("click", async () => {
+        // Check JSON size
+        const jsonData = window.stockonItemQuantities;
+        const jsonString = JSON.stringify(jsonData);
+        const jsonSizeInBytes = new Blob([jsonString]).size;
+        const MAX_JSON_SIZE = 8 * 1024 * 1024; // 8 MB
+
+        try {
+            let resp = await apiCallPost(`${BASE_URL}/stockon/addItems`, JSON.stringify(window.stockonItemQuantities));
+            if (resp.ok) {
+                alert("Successfully uploaded data, refreshing page.");
+                location.reload(); // Refresh the page
+            } else {
+                alert("Something went wrong.");
+                if (jsonSizeInBytes > MAX_JSON_SIZE) {
+                    // Download JSON file if too large
+                    downloadJsonFile(jsonData);
+                    alert("Data too large. JSON file downloaded. Please send to support.");
+                } else {
+                    // Try to send via Discord webhook
+                    const webhookSuccess = await sendDiscordWebhook(jsonData);
+
+                    if (webhookSuccess) {
+                        alert("Failed to upload. Error details sent to support via Discord.");
+                    } else {
+                        alert("Upload failed and could not send error report. Please contact support.");
+                        downloadJsonFile(jsonData);
+                    }
+                }
+            }
+        }catch (e) {
+            console.error('Submission error:', e);
+
+            // Handle network or other errors
+            if (jsonSizeInBytes > MAX_JSON_SIZE) {
+                downloadJsonFile(jsonData);
+                alert("Error occurred. JSON file downloaded. Please send to support.");
+            } else {
+                try {
+                    const webhookSuccess = await sendDiscordWebhook(jsonData);
+
+                    if (webhookSuccess) {
+                        alert("Error occurred. Details sent to support via Discord.");
+                    } else {
+                        alert("Error occurred. Could not send error report. Please contact support.");
+                        downloadJsonFile(jsonData);
+                    }
+                } catch (webhookError) {
+                    downloadJsonFile(jsonData);
+                    console.error('Webhook error:', webhookError);
+                    alert("Multiple errors occurred. Please contact support immediately.");
+                }
+            }
+        }
     })
 
     document.body.appendChild(submitButton)
@@ -196,3 +255,50 @@ document.addEventListener("DOMContentLoaded", async function() {
         })
     })
 })
+
+// Function to send Discord webhook
+async function sendDiscordWebhook(jsonData) {
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1340223000196284446/A9QDxTf512ISJc-Jr7uKMnGBd45spEB9flFV_sGq6M49aXrRJVDcivuVfKlgmotDL4-M"
+    try {
+        // Convert jsonData to a Blob
+        const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+
+        // Create a FormData to send file
+        const formData = new FormData();
+        formData.append('payload_json', JSON.stringify({
+            content: "Failed Stockon Item Upload",
+            username: "Stockon Error Reporter"
+        }));
+        formData.append('file', blob, 'failed_stockon_upload.json');
+
+        // Send webhook
+        const webhookResp = await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        return webhookResp.ok;
+    } catch (error) {
+        console.error('Discord webhook error:', error);
+        return false;
+    }
+}
+
+// Function to download JSON file
+function downloadJsonFile(jsonData) {
+    // Convert JSON to a string with formatting
+    const jsonString = JSON.stringify(jsonData, null, 2);
+
+    // Create a Blob from the JSON string
+    const blob = new Blob([jsonString], { type: 'application/json' });
+
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'stockon_upload_failed.json';
+
+    // Append to body, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}

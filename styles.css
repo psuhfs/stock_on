@@ -247,3 +247,21 @@ table {
     transform: scale(0.95);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Error and Loading States */
+.submit-btn.loading {
+    background-color: #6c757d !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.submit-btn.error {
+    background-color: #dc3545 !important;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
