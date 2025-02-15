@@ -197,7 +197,53 @@ table {
     align-items: center;
     margin-bottom: 10px;
     padding: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     border-radius: 10px;
     border: solid 1px #ddd;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.quantity-controls button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-controls button:hover {
+    background-color: #0056b3;
+}
+
+.quantity-controls .quantity {
+    font-size: 18px;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+}
+
+.submit-btn {
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.submit-btn:hover {
+    background-color: #218838 !important;
+    transform: scale(1.05);
+}
+
+.submit-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
